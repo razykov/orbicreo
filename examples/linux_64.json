@@ -1,0 +1,12 @@
+{
+	"export_file_prefix" : "lib",
+
+	"compiler_std" : "c99",
+	"compiler_options" : [ 
+		"Wstrict-overflow=5"
+	],
+
+	"dependency_includes" : [
+		"<sys/time.h>"
+	]
+}

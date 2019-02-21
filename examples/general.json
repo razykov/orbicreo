@@ -1,0 +1,17 @@
+{
+	"project_name" : "fenrir",
+	"project_type" : "lib",
+
+	"compiler_std" : "c99",
+	"compiler_options" : [ 
+		"Wall", 
+		"Wextra",
+		"fstrict-aliasing"
+	],
+
+	"dependency_includes" : [
+		"<stdio.h>",
+		"<libbixi.h>",
+		"<pthread.h>"
+	]
+}
