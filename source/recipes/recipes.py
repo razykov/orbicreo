@@ -173,7 +173,7 @@ class Recipes(object):
         if not os.path.isdir(prjpath):
             raise ValueError(prjpath + " not found")
         if not os.path.isdir(prjpath + "/recipes"):
-            raise ValueError( os.path.abspath(prjpath + "/recipes") + " not found")
+            raise ValueError(os.path.abspath(prjpath + "/recipes") + " not found")
 
         recipes_files = list_ext_files(prjpath + "/recipes", "*_*.json")
         for rfile in recipes_files:
