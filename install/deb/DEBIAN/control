@@ -1,0 +1,7 @@
+Package: orbicreo
+Version: 0.1-1
+Section: misc
+Architecture: all
+Depends: python3
+Maintainer: Vyacheslav Razykov <v.razykov@gmail.com>
+Description: C-projects builder script
