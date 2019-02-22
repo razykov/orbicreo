@@ -7,7 +7,7 @@ from build.build import orbibuild
 
 def main():
     if not len(sys.argv) > 1:
-        print("<programm> <project_path>")
+        print(sys.argv[0] + + " <project_path>")
         exit(1)
 
     try:

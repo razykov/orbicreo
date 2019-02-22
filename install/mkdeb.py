@@ -16,7 +16,8 @@ def main():
     shutil.rmtree(TMPDIR + "/")
     shutil.copytree("./install/deb", TMPDIR)
 
-    shutil.copytree("./source/", TMPDIR + "/usr/bin/" + PROJECT)
+    shutil.copytree("./source/", TMPDIR + "/usr/bin/_" + PROJECT)
+    shutil.move(TMPDIR + "/usr/bin/_" + PROJECT + "/" + PROJECT, TMPDIR + "/usr/bin/")
 
     os.chdir(TMPDIR + "/../")
     subprocess.run(["fakeroot", "dpkg-deb", "--build", PROJECT])

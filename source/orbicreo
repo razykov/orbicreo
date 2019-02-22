@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+
+init_file = "/usr/bin/_orbicreo/__init__.py"
+
+def main():
+    if os.path.isfile(init_file):
+        subprocess.run([init_file, os.getcwd()])
+    else:
+        print("Executable file '" + init_file + "' not found")
+
+if __name__ == "__main__":
+    main()
