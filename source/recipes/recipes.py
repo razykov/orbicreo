@@ -6,7 +6,7 @@ import sys
 import json
 
 sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../utils" ))
-from utils import *
+from utils   import *
 
 
 class RecipeJson(object):

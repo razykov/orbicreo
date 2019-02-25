@@ -18,6 +18,10 @@ class OrbiPrinter(object):
         print("├ " + string.replace("\n", "\n├ "), file=OrbiPrinter.file)
 
     @staticmethod
+    def add_eq(string):
+        print("╞═ " + string.replace("\n", "\n├ "), file=OrbiPrinter.file)
+
+    @staticmethod
     def add_line():
         print("├───", file=OrbiPrinter.file)
 

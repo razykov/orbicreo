@@ -37,12 +37,9 @@ def __deps_travel(prjpath, func):
                 func(deps + subdir)
 
 def orbibuild(prjpath):
-    
     buildid = str(uuid.uuid4())
 
     __deps_travel(prjpath, orbibuild)    
     __deps_travel(prjpath, __copy_includes)
     orbibuild_project(prjpath, buildid)
     __deps_travel(prjpath, __copy_bins)
-    print(prjpath)
-

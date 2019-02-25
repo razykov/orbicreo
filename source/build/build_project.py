@@ -15,7 +15,7 @@ from utils       import *
 from export      import export
 from recipes     import Recipes
 from orbiprinter import OrbiPrinter as oprint
-
+from version     import ProjectVersion
 
 def main():
     try:
@@ -38,6 +38,11 @@ def __compile(prjpath, recipe):
     shutil.rmtree(objdir, True)
     os.makedirs(objdir)
 
+    vers = ProjectVersion(prjpath)
+    vers.inc_version()
+    vers = vers.macro_def()
+    append_prefix(vers, "-D")
+
     compile_errors = []
     def __thread_compile(_lock, prjpath, filename, recipe):
         md5 = __md5(filename)
@@ -49,9 +54,9 @@ def __compile(prjpath, recipe):
             options += recipe.inherited_options
             options += recipe.compiler_options
             options += recipe.dependency_list
-            options += recipe.include_dirs
-            options += ["-c", "-Iincludes/"]
-            options += ["-o", objfile, filename]
+            options += vers
+            options += recipe.include_dirs + ["-Iincludes/"]
+            options += ["-c", "-o", objfile, filename]
             return options
         
         proc = subprocess.Popen(options(), stderr=subprocess.PIPE)
@@ -105,7 +110,7 @@ def __linking(prjpath, recipe):
     for s in objfiles:
         oprint.add("./" + s.replace(prjpath, ""))
     oprint.add_line()
-    oprint.add("." + subbindir + "/" + recipe.binfile())
+    oprint.add_eq("." + subbindir + "/" + recipe.binfile())
     oprint.print()
 
 def __info_recipe(recipe):
