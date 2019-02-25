@@ -12,7 +12,12 @@ from orbiprinter import OrbiPrinter as oprint
 
 
 def main():
-    export("/home/razykov/work/gefjon/code/libfenrir")
+    export("/home/rv/work/libbixi/")
+    #with open("/home/rv/work/libbixi/code/definitions/bxiexport.h") as f:
+    #    text = f.read()
+    #    print(_struct_detect(text))
+
+
 
 def _dependencies(filepath, stack):
     dirpth = os.path.dirname(filepath) + "/"
@@ -34,7 +39,7 @@ def _dependencies(filepath, stack):
 
 def _headers_list(prjpath):
     stack = []
-    for root, dirnames, filenames in os.walk(prjpath):
+    for root, dirnames, filenames in os.walk( os.path.abspath(prjpath + "/code") ):
         for filename in fnmatch.filter(filenames, '*.h'):
             header = os.path.join(root, filename)
             _dependencies(header, stack)
@@ -53,11 +58,21 @@ def _struct_detect(text):
     prev_c = ""
     cmnt_ml = False
     cmnt_ol = False
+    curline = ""
 
     def _comment():
         return cmnt_ml or cmnt_ol
+    def _in_macro(line):
+        deps = re.findall(r"(^[ ]*#[ ]*(ifndef|define|endif))", line);
+        return len(deps) != 0
 
     for c in text:
+        if c != "\n":
+            curline += c
+        else:
+            _in_macro(curline)
+            curline = ""
+
         if state == "find" and c == strt1[0]:
             strti += 1
             state = "check"
@@ -66,7 +81,8 @@ def _struct_detect(text):
                 state = "find"
                 strti = 0
             elif strti == len(strt1) - 1:
-                state = "copy_dc"
+                if not _in_macro(curline):
+                    state = "copy_dc"
                 strti = 0
             else:
                 strti += 1
@@ -101,10 +117,13 @@ def _struct_detect(text):
             exprt = exprt + c
 
             endi = endi + 1 if c == end2[endi] else 0
+            if _in_macro(curline):
+                endi = 0
 
             if endi == len(end2):
                 exprt = exprt.replace("_FROM", "", 1)
-                exprt = exprt.replace(end2, "", 1)
+                exprt = " ".join(exprt.rsplit(end2, 1))
+                #exprt = exprt.replace(end2, "", 1)
                 exprt = exprt.strip()
                 exprt = exprt + ("" if exprt.count("\n") == 0 else "\n")
                 result.append(exprt)
@@ -132,8 +151,8 @@ def _exports_list(prjpath):
 
     oprint.start("Exporting")
     for header in headers:
-        oprint.add( "./" + header.replace(prjpath, "") )
         fexports = _exports_file_list(header)
+        oprint.add( "./" + header.replace(prjpath, "") )
         if len(fexports) != 0:
             exports.append("\n\n/* Exported from ." + header.replace(prjpath, "") + " */")
         exports += fexports

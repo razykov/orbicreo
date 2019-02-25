@@ -2,9 +2,28 @@
 
 ## Установка
 
-Выполнить из директории проекта `./install/mkdeb.py`.
-В корневой директории проекта повится **.deb** пакет.
-После установки пакета исполняемые файлы копируются в `/usr/bin/orbicreo`
+#### Debian/Ubuntu
+```bash
+#!/bin/bash
+
+git clone https://bitbucket.org/razykov/orbicreo.git
+
+cd orbicreo
+./install/mkdeb.py
+dpkg -i orbicreo.deb
+```
+#### Others
+```bash
+#!/bin/bash
+
+git clone https://bitbucket.org/razykov/orbicreo.git
+
+cd orbicreo
+mkdir /usr/bin/_orbicreo
+cp -R source/* /usr/bin/_orbicreo
+mv /usr/bin/_orbicreo/orbicreo /usr/bin/
+```
+
 
 ## Написание рецептов сборки
 
@@ -20,10 +39,11 @@
 ### Значение полей
 ***** помечены обязательные поля
 
-* **`project_name`*** {string} - имя проекта
-* **`project_type`*** {string} - тип проекта **`lib`|`app`**
+* **`project_name*`** {string} - имя проекта
+* **`project_type*`** {string} - тип проекта **`lib`|`app`**
 * **`compiler_name`** {string} - название используемого компилятора. По-умолчанию используется **`gcc`**
 * **`compiler_std`** {string} - стандарт языка **`с89`, `с99`, `gnu99`**. По-умолчанию используется **`gnu99`**
 * **`compiler_options`** {list of strings} - список опций компилятора. Опции указываются без знака минус **`-`**
 * **`dependency_includes`** {list of strings} - список заголовочных файлов C/C++ вставляемых перед экспортируемыми объявлениями заголовочных файлов библиотеки. Параметр не имеет эффекта для проектов с типом **`app`**. Экспорт происходит для объявлений, помеченных макросами используемыми [libbixi](https://github.com/codemeow/bixi) **`EXPORT`**, **`EXPORT_FROM`**, **`EXPORT_TO`**
 * **`export_file_prefix`** {string} - префикс добавляемый к имени создаваемого исполняемого файла
+* **`include_dirs`** {list of string} - список директорий с заголовочными файлами **`*.h`**, **`.hpp`**

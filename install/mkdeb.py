@@ -20,7 +20,7 @@ def main():
     shutil.move(TMPDIR + "/usr/bin/_" + PROJECT + "/" + PROJECT, TMPDIR + "/usr/bin/")
 
     os.chdir(TMPDIR + "/../")
-    subprocess.run(["fakeroot", "dpkg-deb", "--build", PROJECT])
+    subprocess.call(["fakeroot", "dpkg-deb", "--build", PROJECT])
     shutil.copy(PROJECT + ".deb", crd)
 
 if __name__ == "__main__":

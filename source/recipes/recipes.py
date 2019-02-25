@@ -18,7 +18,9 @@ class RecipeJson(object):
         "compiler_std"        : [str],
         "compiler_options"    : [list, str],
         "dependency_includes" : [list, str],
-        "inherited_options"   : [list, str]
+        "inherited_options"   : [list, str],
+        "dependency_list"     : [list, str],
+        "include_dirs"        : [list, str]
     }
     __oses = ["windows", "linux", "bsd", "minix"]
     __json_files_regexp = "(" + lst_to_str(__oses, "|") + ")_(86|64)\.json"
@@ -40,18 +42,18 @@ class RecipeJson(object):
         if not os.path.exists(generalfilename):
             self.gen_json = { }
         else:
-            with open(generalfilename, "rb") as f:
-                self.gen_json = json.loads(f.read())
+            with open(generalfilename, "r") as f:
+                self.gen_json = json.loads(str(f.read()))
 
         with open(filename, "r") as f:
-            self.recipe_json = json.loads(f.read())
+            self.recipe_json = json.loads(str(f.read()))
 
         try:
             self.__json_verify(self.gen_json)
             self.__json_verify(self.recipe_json)
         except ValueError as e:
             print (e.args[0])
-            exit()
+            sys.exit(1)
 
         self.json = self.gen_json.copy()
         for key, value in self.recipe_json.items():
@@ -86,6 +88,7 @@ class Recipe(object):
         self = super(Recipe, self).__new__(self)
 
         if not os.path.exists(filename):
+            print(filename + " not found")
             return None
 
         self.filename = filename
@@ -101,6 +104,8 @@ class Recipe(object):
             self.compiler_options    = rj.read('compiler_options',    False, [])
             self.dependency_includes = rj.read('dependency_includes', False, [])
             self.inherited_options   = rj.read('inherited_options',   False, [])
+            self.dependency_list     = rj.read('dependency_list',     False, [])
+            self.include_dirs        = rj.read('include_dirs',        False, [])
             self.linker_options      = []
             self.binfile_prefix      = ""
             self.binfile_extenstion  = ""
@@ -120,6 +125,8 @@ class Recipe(object):
         append_prefix(self.compiler_options,  "-")
         append_prefix(self.linker_options,    "-")
         append_prefix(self.inherited_options, "-")
+        append_prefix(self.dependency_list,   "-l")
+        append_prefix(self.include_dirs,      "-I")
 
         return self
 
@@ -177,7 +184,10 @@ class Recipes(object):
 
         recipes_files = list_ext_files(prjpath + "/recipes", "*_*.json")
         for rfile in recipes_files:
-            self.list.append(Recipe(rfile))
+            recipe = Recipe(rfile)
+            if recipe == None:
+                raise ValueError("Broken recipe " + rfile)
+            self.list.append(recipe)
 
 
 def main():

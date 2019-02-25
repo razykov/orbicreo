@@ -4,4 +4,4 @@ Section: misc
 Architecture: all
 Depends: python3
 Maintainer: Vyacheslav Razykov <v.razykov@gmail.com>
-Description: C-projects builder script
+Description: Builder script for C-projects based on libbixi
