@@ -9,6 +9,9 @@ sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../utils" ))
 from utils   import *
 
 
+__oses = ["windows", "linux", "bsd", "minix"]
+json_files_regexp = "(" + lst_to_str(__oses, "|") + ")_(32|64)\.json"
+
 class RecipeJson(object):
     __params = {
         "project_name"        : [str],
@@ -20,10 +23,9 @@ class RecipeJson(object):
         "dependency_includes" : [list, str],
         "inherited_options"   : [list, str],
         "dependency_list"     : [list, str],
-        "include_dirs"        : [list, str]
+        "include_dirs"        : [list, str],
+        "linker_options"      : [list, str]
     }
-    __oses = ["windows", "linux", "bsd", "minix"]
-    __json_files_regexp = "(" + lst_to_str(__oses, "|") + ")_(86|64)\.json"
 
     def __json_verify(self, jsn):
         for key, value in jsn.items():
@@ -65,7 +67,7 @@ class RecipeJson(object):
                 for s in value:
                     self.json[key].append(s)
 
-        regs = re.findall(self.__json_files_regexp, filename)
+        regs = re.findall(json_files_regexp, filename)
         if regs[0][0] != "":
             self.json['os'] = regs[0][0]
         else:
@@ -106,18 +108,19 @@ class Recipe(object):
             self.inherited_options   = rj.read('inherited_options',   False, [])
             self.dependency_list     = rj.read('dependency_list',     False, [])
             self.include_dirs        = rj.read('include_dirs',        False, [])
-            self.linker_options      = []
+            self.linker_options      = rj.read('linker_options',      False, [])
             self.binfile_prefix      = ""
             self.binfile_extenstion  = ""
         except ValueError as e:
             print (e.args[0])
             return None
 
+        self.include_dirs.append("includes/")
         if self.project_type == "lib":
             self.linker_options.append("shared")
             self.compiler_options.append("fPIC")
+            self.binfile_prefix = "lib"
             if self.os == "linux":
-                self.binfile_prefix = "lib"
                 self.binfile_extenstion = ".so"
             if self.os == "windows":
                 self.binfile_extenstion = ".dll"
@@ -173,7 +176,7 @@ class Recipe(object):
         return res
 
 class Recipes(object):
-    def __init__(self, prjpath):
+    def __init__(self, prjpath, recipes_use=None):
         super(Recipes, self).__init__()
         self.list = []
 
@@ -187,8 +190,17 @@ class Recipes(object):
             recipe = Recipe(rfile)
             if recipe == None:
                 raise ValueError("Broken recipe " + rfile)
-            self.list.append(recipe)
+            if recipes_use != None:
+                if (recipe.os, recipe.arch) in recipes_use:
+                    self.list.append(recipe)
 
+def recipes_names(prjpath):
+    res = []
+    recipes_files = list_ext_files(prjpath + "/recipes", "*_*.json")
+    for rfile in recipes_files:
+        res += re.findall(json_files_regexp, rfile)
+    return res
+        
 
 def main():
     recps = Recipes(sys.argv[1])

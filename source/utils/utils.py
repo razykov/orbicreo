@@ -2,6 +2,7 @@
 
 import os
 import fnmatch
+import hashlib
 
 def list_ext_files(path, ext):
     res = []
@@ -19,3 +20,10 @@ def lst_to_str(lst, declm=" "):
 
 def append_prefix(lst, prefx):
     lst[:] = [prefx + x for x in lst]
+
+def md5_file(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
