@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import fnmatch
 import hashlib
 
@@ -27,3 +28,8 @@ def md5_file(fname):
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+def build_break(prjpath):
+    fingerprint = prjpath + "/build/fingerprint"
+    os.remove(fingerprint)
+    sys.exit(1)

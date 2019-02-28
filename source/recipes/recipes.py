@@ -100,7 +100,8 @@ class Recipe(object):
             self.arch                = rj.read('arch',                True)
             self.project_name        = rj.read('project_name',        True)
             self.project_type        = rj.read('project_type',        True)
-            self.export_file_prefix  = rj.read('export_file_prefix',  True)
+            self.export_file_prefix  = rj.read('export_file_prefix',  False,
+                                               "" if self.project_type == "app" else "lib")
             self.compiler_name       = rj.read('compiler_name',       False, "gcc")
             self.compiler_std        = rj.read('compiler_std',        False, "gnu89")
             self.compiler_options    = rj.read('compiler_options',    False, [])
@@ -171,7 +172,7 @@ class Recipe(object):
         return res
     def linker_opt_insert(self):
         res = ""
-        for opt in self.linker_options:
+        for opt in self.linker_options + self.dependency_list:
             res += opt + " "
         return res
 

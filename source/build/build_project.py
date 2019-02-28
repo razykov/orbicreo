@@ -81,7 +81,7 @@ def __compile(prjpath, recipe, buildid):
             if err != compile_errors[-1]:
                 oprint.add_line()
         oprint.print()
-        sys.exit(1)
+        build_break(prjpath)
 
 def __linking(prjpath, recipe):
     obj = prjpath + "/build/obj/" + recipe.os + "_" + recipe.arch
@@ -93,8 +93,8 @@ def __linking(prjpath, recipe):
     shutil.rmtree(bindir + "/*", True)
 
     objfiles = list_ext_files(obj, '*.o')
-    options = [recipe.compiler_name] + recipe.linker_options + \
-              ["-o", bindir + "/" + recipe.binfile()] + objfiles
+    options = [recipe.compiler_name] + recipe.linker_options + objfiles + \
+               recipe.dependency_list + ["-o", bindir + "/" + recipe.binfile()]
     proc = subprocess.Popen(options, stderr=subprocess.PIPE)
     proc.wait()
 
@@ -109,7 +109,7 @@ def __linking(prjpath, recipe):
         oprint.start("Linking errors")
         oprint.add( str(proc.communicate()[1], 'utf-8') )
         oprint.print()
-        sys.exit(1)
+        build_break(prjpath)
 
 def __info_recipe(recipe):
     oprint.start("Configuring project " + recipe.name())
@@ -149,7 +149,7 @@ def orbibuild_project(prjpath, buildid, recipes_use=None):
         recipes = Recipes(prjpath, recipes_use)
     except ValueError as e:
         print (e.args[0])
-        sys.exit(1)
+        build_break(prjpath)
 
     export(prjpath)
     for recipe in recipes.list:

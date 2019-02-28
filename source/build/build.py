@@ -58,17 +58,21 @@ def __files_fingerprint(prjpath, files):
 
 def __fingerprint_check(prjpath):
     res = False
-    fpfile = prjpath + "/build/fingerprint"
+    builddir = prjpath + "/build"
+    fpfile = builddir + "/fingerprint"
 
     cfiles = list_ext_files(prjpath + "/code", "*.c")
     hfiles = list_ext_files(prjpath + "/code", "*.h")
-    fingp_cur = __files_fingerprint(prjpath, cfiles + hfiles)
+    jfiles = list_ext_files(prjpath + "/recipes", "*.json")
+    fingp_cur = __files_fingerprint(prjpath, cfiles + hfiles + jfiles)
     fingp_old = None
 
     if os.path.isfile(fpfile):
         fingp_old = pickle.load( open( fpfile, "rb" ) )
 
     res = fingp_cur == fingp_old
+    if not os.path.isdir(builddir):
+        os.makedirs(builddir)
     pickle.dump(fingp_cur, open( fpfile, "wb" ))
     return res
 
