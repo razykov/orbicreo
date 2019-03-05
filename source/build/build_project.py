@@ -35,10 +35,11 @@ def __compile(prjpath, recipe, buildid):
     append_prefix(vers, "-D")
 
     compile_errors = []
+    compile_warngs = []
     def __thread_compile(_lock, prjpath, filename, recipe):
         md5 = md5_file(filename)
         objfile = os.path.abspath(objdir) + "/" + str(md5) + ".o"
-
+        
         def options():
             options  = []
             options += [recipe.compiler_name]
@@ -52,11 +53,14 @@ def __compile(prjpath, recipe, buildid):
         
         proc = subprocess.Popen(options(), stderr=subprocess.PIPE)
         proc.wait()
-
+        
+        bts = proc.communicate()[1]
+        outpt = str(bts)
         if proc.returncode:
-            err = proc.communicate()[1]
-            compile_errors.append( (filename, str(err, 'utf-8')) )
-
+            compile_errors.append( (filename, str(bts, 'utf-8')) )
+        if proc.returncode or outpt.find(": warning:") != -1:
+            compile_warngs.append( (filename, str(bts, 'utf-8')) )
+        
         filename = filename.replace(prjpath, "./")
         oprint.add(filename)
         _lock.release()
@@ -82,6 +86,16 @@ def __compile(prjpath, recipe, buildid):
                 oprint.add_line()
         oprint.print()
         build_break(prjpath)
+
+    if len(compile_warngs):
+        oprint.file = sys.stderr
+        oprint.start("Warnings")
+        for wrn in compile_warngs:
+            oprint.add(wrn[1])
+            if wrn != compile_warngs[-1]:
+                oprint.add_line()
+        oprint.print()
+        oprint.file = sys.stdout
 
 def __linking(prjpath, recipe):
     obj = prjpath + "/build/obj/" + recipe.os + "_" + recipe.arch

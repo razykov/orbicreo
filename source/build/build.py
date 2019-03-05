@@ -61,10 +61,9 @@ def __fingerprint_check(prjpath):
     builddir = prjpath + "/build"
     fpfile = builddir + "/fingerprint"
 
-    cfiles = list_ext_files(prjpath + "/code", "*.c")
-    hfiles = list_ext_files(prjpath + "/code", "*.h")
+    cfiles = list_ext_files(prjpath + "/code", "*")
     jfiles = list_ext_files(prjpath + "/recipes", "*.json")
-    fingp_cur = __files_fingerprint(prjpath, cfiles + hfiles + jfiles)
+    fingp_cur = __files_fingerprint(prjpath, cfiles + jfiles)
     fingp_old = None
 
     if os.path.isfile(fpfile):
@@ -85,7 +84,7 @@ def __build_complete(prjpath, stime):
     delta = etime - (stime if stime != None else etime)
 
     oprint.start("Build complete")
-    oprint.add(prjname + " build complete in " + str(delta.microseconds/ 1000) + "ms")
+    oprint.add(prjname + " build complete in " + str(delta.microseconds / 1000) + "ms")
     oprint.print()
 
 def orbibuild(prjpath, recipes_use=None):
