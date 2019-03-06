@@ -24,7 +24,8 @@ class RecipeJson(object):
         "inherited_options"   : [list, str],
         "dependency_list"     : [list, str],
         "include_dirs"        : [list, str],
-        "linker_options"      : [list, str]
+        "linker_options"      : [list, str],
+        "copy_files"          : [list, list]
     }
 
     def __json_verify(self, jsn):
@@ -37,6 +38,7 @@ class RecipeJson(object):
                     if not isinstance(e, self.__params[key][1]):
                         raise ValueError("Incorrect type of \"" + key + "\" subfield. "
                                          "Expected type " + str(self.__params[key][1]) )
+
     def __init__(self, filename):
         super(RecipeJson, self).__init__()
         self.filename = filename
@@ -110,6 +112,7 @@ class Recipe(object):
             self.dependency_list     = rj.read('dependency_list',     False, [])
             self.include_dirs        = rj.read('include_dirs',        False, [])
             self.linker_options      = rj.read('linker_options',      False, [])
+            self.copy_files          = rj.read('copy_files',          False, [])
             self.binfile_prefix      = ""
             self.binfile_extenstion  = ""
         except ValueError as e:

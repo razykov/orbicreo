@@ -35,7 +35,7 @@ def __copy_includes(subdir):
         os.makedirs(prjpath + "/includes")
     copytree(subdir + "/includes", prjpath + "/includes/")
 
-def __deps_travel(prjpath, func, arg1=None):
+def __deps_travel(prjpath, func, arg1=None, arg2=None):
     res = True
     deps = prjpath + "/depends/"
     if os.path.isdir(deps):
@@ -45,7 +45,7 @@ def __deps_travel(prjpath, func, arg1=None):
                 if arg1 == None:
                     func(deps + subdir)
                 else:
-                    res &= func(deps + subdir, arg1)
+                    res &= func(deps + subdir, arg1, arg2)
     return res
 
 def __files_fingerprint(prjpath, files):
@@ -60,9 +60,11 @@ def __fingerprint_check(prjpath):
     res = False
     builddir = prjpath + "/build"
     fpfile = builddir + "/fingerprint"
+    versfile = prjpath + "/code/version.json"
 
     cfiles = list_ext_files(prjpath + "/code", "*")
     jfiles = list_ext_files(prjpath + "/recipes", "*.json")
+    if versfile in cfiles: cfiles.remove(versfile)
     fingp_cur = __files_fingerprint(prjpath, cfiles + jfiles)
     fingp_old = None
 
@@ -87,7 +89,7 @@ def __build_complete(prjpath, stime):
     oprint.add(prjname + " build complete in " + str(delta.microseconds / 1000) + "ms")
     oprint.print()
 
-def orbibuild(prjpath, recipes_use=None):
+def orbibuild(prjpath, app_args, recipes_use=None):
     res = True
     stime = None
     buildid = str(uuid.uuid4())
@@ -97,12 +99,18 @@ def orbibuild(prjpath, recipes_use=None):
     if recipes_use == None:
         recipes_use = recipes_names(prjpath)
 
-    res &= __deps_travel(prjpath, orbibuild, recipes_use)
-    if not res:
+    res &= __deps_travel(prjpath, orbibuild, app_args, recipes_use)
+
+    if (not res or app_args.force) and not app_args.clean:
         __deps_travel(prjpath, __copy_includes)
         stime = datetime.datetime.now()
-        orbibuild_project(prjpath, buildid, recipes_use)
+        orbibuild_project(prjpath, app_args, buildid, recipes_use)
         __deps_travel(prjpath, __copy_bins)
-    __build_complete(prjpath, stime)
+
+    if app_args.clean:
+        shutil.rmtree(prjpath + "/build", True)
+        shutil.rmtree(prjpath + "/bin", True)
+    else:
+        __build_complete(prjpath, stime)
 
     return res

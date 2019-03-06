@@ -22,7 +22,7 @@ def main():
     except ValueError as e:
         print (e.args[0])
 
-def __compile(prjpath, recipe, buildid):
+def __compile(prjpath, app_args, recipe, buildid):
     objdir = prjpath + "/build/obj/" + recipe.os + "_" + recipe.arch
     cfiles = list_ext_files(prjpath + "/code", '*.c')
 
@@ -30,7 +30,8 @@ def __compile(prjpath, recipe, buildid):
     os.makedirs(objdir)
 
     vers = ProjectVersion(prjpath)
-    vers.inc_version()
+    if not app_args.rebuild:
+        vers.inc_version()
     vers = vers.macro_def()
     append_prefix(vers, "-D")
 
@@ -125,6 +126,15 @@ def __linking(prjpath, recipe):
         oprint.print()
         build_break(prjpath)
 
+def __copy_files(prjpath, recipe):
+    if len(recipe.copy_files):
+        oprint.start("Copy files")
+        for cpf in recipe.copy_files:
+            if os.path.isfile(cpf[0]) and os.path.isdir(cpf[1]):
+                oprint.add("./" + cpf[0] + " -> " + cpf[1])
+                shutil.copyfile(cpf[0], cpf[1] + "/" + cpf[0]);
+        oprint.print()
+
 def __info_recipe(recipe):
     oprint.start("Configuring project " + recipe.name())
     oprint.add("Compiler name: " + recipe.compiler_name)
@@ -145,7 +155,7 @@ def __get_build_id(build_dir):
             uuid = file.readline()
     return uuid
 
-def orbibuild_project(prjpath, buildid, recipes_use=None):
+def orbibuild_project(prjpath, app_args, buildid, recipes_use=None):
     if not os.path.isdir(prjpath):
         raise ValueError("Incorrect path '" + prjpath + "'")
     prjpath = os.path.abspath(prjpath) + "/"
@@ -168,8 +178,9 @@ def orbibuild_project(prjpath, buildid, recipes_use=None):
     export(prjpath)
     for recipe in recipes.list:
         __info_recipe(recipe)
-        __compile(prjpath, recipe, buildid)
+        __compile(prjpath, app_args, recipe, buildid)
         __linking(prjpath, recipe)
+        __copy_files(prjpath, recipe)
 
 
 if __name__ == "__main__":
