@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 import fnmatch
 import hashlib
 
@@ -33,3 +34,27 @@ def build_break(prjpath):
     fingerprint = prjpath + "/build/fingerprint"
     os.remove(fingerprint)
     sys.exit(1)
+
+def deps_travel(prjpath, func, arg1=None, arg2=None):
+    res = True
+    deps = prjpath + "/depends/"
+    if os.path.isdir(deps):
+        subdirs = os.listdir(deps)
+        for subdir in subdirs:
+            if os.path.isdir(deps + subdir):
+                if arg1 == None:
+                    func(deps + subdir)
+                else:
+                    res &= func(deps + subdir, arg1, arg2)
+    return res
+
+def copytree(src, dst, symlinks=False, ignore=None):
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            if not os.path.exists(d):
+                os.makedirs(d)
+            copytree(s, d, symlinks, ignore)
+        else:
+            shutil.copy2(s, d)

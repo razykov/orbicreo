@@ -155,6 +155,10 @@ def __get_build_id(build_dir):
             uuid = file.readline()
     return uuid
 
+def __copy_bins(subdir):
+    prjpath = subdir.split("/depends/", 2)[0]
+    copytree(subdir + "/bin", prjpath + "bin/")
+
 def orbibuild_project(prjpath, app_args, buildid, recipes_use=None):
     if not os.path.isdir(prjpath):
         raise ValueError("Incorrect path '" + prjpath + "'")
@@ -179,6 +183,7 @@ def orbibuild_project(prjpath, app_args, buildid, recipes_use=None):
     for recipe in recipes.list:
         __info_recipe(recipe)
         __compile(prjpath, app_args, recipe, buildid)
+        deps_travel(prjpath, __copy_bins)
         __linking(prjpath, recipe)
         __copy_files(prjpath, recipe)
 

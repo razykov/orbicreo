@@ -120,7 +120,8 @@ class Recipe(object):
             return None
 
         self.include_dirs.append("includes/")
-        if self.project_type == "lib":
+        self.linker_options.append("Lbin/" + self.os + "_" + self.arch)
+        if self.project_type == "shared":
             self.linker_options.append("shared")
             self.compiler_options.append("fPIC")
             self.binfile_prefix = "lib"

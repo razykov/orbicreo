@@ -16,37 +16,11 @@ from recipes       import recipes_names
 from orbiprinter   import OrbiPrinter as oprint
 
 
-def copytree(src, dst, symlinks=False, ignore=None):
-    for item in os.listdir(src):
-        s = os.path.join(src, item)
-        d = os.path.join(dst, item)
-        if os.path.isdir(s):
-            copytree(s, d, symlinks, ignore)
-        else:
-            shutil.copy2(s, d)
-
-def __copy_bins(subdir):
-    prjpath = subdir.split("/depends/", 2)[0]
-    copytree(subdir + "/bin", prjpath + "/bin/")
-
 def __copy_includes(subdir):
     prjpath = subdir.split("/depends/", 2)[0]
     if not os.path.isdir(prjpath + "/includes"):
         os.makedirs(prjpath + "/includes")
     copytree(subdir + "/includes", prjpath + "/includes/")
-
-def __deps_travel(prjpath, func, arg1=None, arg2=None):
-    res = True
-    deps = prjpath + "/depends/"
-    if os.path.isdir(deps):
-        subdirs = os.listdir(deps)
-        for subdir in subdirs:
-            if os.path.isdir(deps + subdir):
-                if arg1 == None:
-                    func(deps + subdir)
-                else:
-                    res &= func(deps + subdir, arg1, arg2)
-    return res
 
 def __files_fingerprint(prjpath, files):
     res = {}
@@ -99,13 +73,12 @@ def orbibuild(prjpath, app_args, recipes_use=None):
     if recipes_use == None:
         recipes_use = recipes_names(prjpath)
 
-    res &= __deps_travel(prjpath, orbibuild, app_args, recipes_use)
+    res &= deps_travel(prjpath, orbibuild, app_args, recipes_use)
 
     if (not res or app_args.force) and not app_args.clean:
-        __deps_travel(prjpath, __copy_includes)
+        deps_travel(prjpath, __copy_includes)
         stime = datetime.datetime.now()
         orbibuild_project(prjpath, app_args, buildid, recipes_use)
-        __deps_travel(prjpath, __copy_bins)
 
     if app_args.clean:
         shutil.rmtree(prjpath + "/build", True)

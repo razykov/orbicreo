@@ -18,6 +18,19 @@ def main():
     #    print(_struct_detect(text))
 
 
+def _comment_remover(text):
+    def replacer(match):
+        s = match.group(0)
+        if s.startswith('/'):
+            return " " # note: a space and not an empty string
+        else:
+            return s
+    pattern = re.compile(
+        r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+        re.DOTALL | re.MULTILINE
+    )
+    r1 = re.sub(pattern, replacer, text)
+    return os.linesep.join([s for s in r1.splitlines() if s.strip()])
 
 def _dependencies(filepath, stack):
     dirpth = os.path.dirname(filepath) + "/"
@@ -25,6 +38,7 @@ def _dependencies(filepath, stack):
 
     with open(filepath) as f:
         text = f.read()
+    text = _comment_remover(text)
 
     deps = re.findall(r"#[ ]*include[ ]*\"([ ]*.+\.h[ ]*?)\"", text);
 
