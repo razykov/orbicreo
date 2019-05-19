@@ -5,9 +5,7 @@ import re
 import sys
 import json
 
-sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../utils" ))
-from utils   import *
-
+from utils import *
 
 __oses = ["windows", "linux", "bsd", "minix"]
 json_files_regexp = "(" + lst_to_str(__oses, "|") + ")_(32|64)\.json"
@@ -26,7 +24,7 @@ class RecipeJson(object):
         "include_dirs"        : [list, str],
         "linker_options"      : [list, str],
         "copy_files"          : [list, list]
-    }
+    } 
 
     def __json_verify(self, jsn):
         for key, value in jsn.items():
@@ -95,6 +93,7 @@ class Recipe(object):
             print(filename + " not found")
             return None
 
+        prjpath = os.path.abspath(os.path.dirname(filename) + "/../").replace(os.getcwd(), ".")
         self.filename = filename
         try:
             rj = RecipeJson(filename)
@@ -116,11 +115,11 @@ class Recipe(object):
             self.binfile_prefix      = ""
             self.binfile_extenstion  = ""
         except ValueError as e:
-            print (e.args[0])
+            print(e.args[0])
             return None
 
-        self.include_dirs.append("includes/")
-        self.linker_options.append("Lbin/" + self.os + "_" + self.arch)
+        self.include_dirs.append(prjpath + "/includes/")
+        self.linker_options.append("L" + prjpath + "/bin/" + self.os + "_" + self.arch)
         if self.project_type == "shared":
             self.linker_options.append("shared")
             self.compiler_options.append("fPIC")

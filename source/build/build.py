@@ -7,9 +7,6 @@ import shutil
 import pickle
 import datetime
 
-sys.path.append( os.path.abspath(os.path.dirname(__file__)))
-sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../recipes" ))
-sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../utils" ))
 from utils         import *
 from build_project import orbibuild_project
 from recipes       import recipes_names
@@ -17,7 +14,7 @@ from orbiprinter   import OrbiPrinter as oprint
 
 
 def __copy_includes(subdir):
-    prjpath = subdir.split("/depends/", 2)[0]
+    prjpath = os.path.abspath(subdir + "/../../")
     if not os.path.isdir(prjpath + "/includes"):
         os.makedirs(prjpath + "/includes")
     copytree(subdir + "/includes", prjpath + "/includes/")

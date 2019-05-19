@@ -7,15 +7,8 @@ import shutil
 import hashlib
 import fnmatch
 
-sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../utils" ))
+from utils       import *
 from orbiprinter import OrbiPrinter as oprint
-
-
-def main():
-    export("/home/rv/work/libbixi/")
-    #with open("/home/rv/work/libbixi/code/definitions/bxiexport.h") as f:
-    #    text = f.read()
-    #    print(_struct_detect(text))
 
 
 def _comment_remover(text):
@@ -32,19 +25,23 @@ def _comment_remover(text):
     r1 = re.sub(pattern, replacer, text)
     return os.linesep.join([s for s in r1.splitlines() if s.strip()])
 
-def _dependencies(filepath, stack):
+def _dependencies(prjpath, filepath, stack):
     dirpth = os.path.dirname(filepath) + "/"
     text = ""
 
-    with open(filepath) as f:
-        text = f.read()
-    text = _comment_remover(text)
+    if os.path.isfile(filepath):
+        with open(filepath) as f:
+            text = f.read()
+        text = _comment_remover(text)
+    else:
+        print("file", os.path.abspath(filepath), "not found")
+        build_break(prjpath)
 
     deps = re.findall(r"#[ ]*include[ ]*\"([ ]*.+\.h[ ]*?)\"", text);
 
     for dep in deps:
         deppath = os.path.abspath(dirpth + dep)
-        _dependencies(deppath, stack)
+        _dependencies(prjpath, deppath, stack)
         if stack.count(deppath) == 0:
             stack.append(deppath)
 
@@ -56,7 +53,7 @@ def _headers_list(prjpath):
     for root, dirnames, filenames in os.walk( os.path.abspath(prjpath + "/code") ):
         for filename in fnmatch.filter(filenames, '*.h'):
             header = os.path.join(root, filename)
-            _dependencies(header, stack)
+            _dependencies(prjpath, header, stack)
     return stack
 
 def _struct_detect(text):
@@ -137,7 +134,6 @@ def _struct_detect(text):
             if endi == len(end2):
                 exprt = exprt.replace("_FROM", "", 1)
                 exprt = " ".join(exprt.rsplit(end2, 1))
-                #exprt = exprt.replace(end2, "", 1)
                 exprt = exprt.strip()
                 exprt = exprt + ("" if exprt.count("\n") == 0 else "\n")
                 result.append(exprt)
@@ -173,7 +169,7 @@ def _exports_list(prjpath):
     oprint.print()
     return exports
 
-def export(prjpath):
+def export(prjpath, recipe):
     includes = os.path.abspath(prjpath + "/includes")
     tmpdir = "/tmp/includes_" + hashlib.md5(bytes(prjpath, "ascii")).hexdigest() + "/"
     libname = re.sub( r"(.)+/", "", os.path.abspath(prjpath) )
@@ -183,18 +179,16 @@ def export(prjpath):
         os.mkdir(tmpdir)
     with open(tmpheader, "w") as f:
         f.write("#ifndef " + libname.upper() + "_H\n")
-        f.write("#define " + libname.upper() + "_H\n")
+        f.write("#define " + libname.upper() + "_H\n\n")
+
+        for incl in recipe.dependency_includes:
+            f.write("#include " + incl.strip() + "\n")
 
         for str in _exports_list(prjpath):
-            f.write(str)
-            f.write("\n")
+            f.write(str + "\n")
 
         f.write("\n#endif /* " + libname.upper() + "_H */\n")
     if not os.path.exists(includes):
         os.makedirs(includes)
     shutil.rmtree(includes + "/*", True)
     shutil.copyfile(tmpheader, includes + "/" + os.path.basename(tmpheader))
-
-
-if __name__ == "__main__":
-    main()

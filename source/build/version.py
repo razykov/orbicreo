@@ -3,12 +3,6 @@
 import os
 import json
 
-
-def main():
-    ver = ProjectVersion("/home/razykov/work/libfenrir/")
-    ver.inc_version()
-    print(ver.macro_def())
-
 class ProjectVersion(object):
     def __init__(self, prjpath):
         self.prjpath = prjpath
@@ -50,7 +44,3 @@ class ProjectVersion(object):
         opts.append("PROJECT_VERSION_MINOR=" + str(vers["minor"]))
         opts.append("PROJECT_VERSION_BUILD=" + str(vers["build"]))
         return opts
-
-
-if __name__ == "__main__":
-    main()

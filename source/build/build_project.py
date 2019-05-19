@@ -6,10 +6,8 @@ import shutil
 import fnmatch
 import _thread
 import subprocess
+import errno
 
-sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../utils"   ))
-sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../export"  ))
-sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/../recipes" ))
 from utils       import *
 from export      import export
 from recipes     import Recipes
@@ -27,7 +25,13 @@ def __compile(prjpath, app_args, recipe, buildid):
     cfiles = list_ext_files(prjpath + "/code", '*.c')
 
     shutil.rmtree(objdir, True)
-    os.makedirs(objdir)
+    try:
+        os.makedirs(objdir)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(objdir):
+            pass
+        else:
+            raise
 
     vers = ProjectVersion(prjpath)
     if not app_args.rebuild:
@@ -136,7 +140,7 @@ def __copy_files(prjpath, recipe):
         oprint.print()
 
 def __info_recipe(recipe):
-    oprint.start("Configuring project " + recipe.name())
+    oprint.start("Configuring " + recipe.project_name + " project " + recipe.name())
     oprint.add("Compiler name: " + recipe.compiler_name)
     oprint.add("Compiler std : " + recipe.compiler_std)
     oprint.add("Compiler opt : " + recipe.compiler_opt_insert())
@@ -156,8 +160,8 @@ def __get_build_id(build_dir):
     return uuid
 
 def __copy_bins(subdir):
-    prjpath = subdir.split("/depends/", 2)[0]
-    copytree(subdir + "/bin", prjpath + "bin/")
+    prjpath = subdir + "/../../bin/"
+    copytree(subdir + "/bin", prjpath)
 
 def orbibuild_project(prjpath, app_args, buildid, recipes_use=None):
     if not os.path.isdir(prjpath):
@@ -179,11 +183,12 @@ def orbibuild_project(prjpath, app_args, buildid, recipes_use=None):
         print (e.args[0])
         build_break(prjpath)
 
-    export(prjpath)
+    if len(recipes.list):
+        export(prjpath, recipes.list[0])
     for recipe in recipes.list:
         __info_recipe(recipe)
-        __compile(prjpath, app_args, recipe, buildid)
         deps_travel(prjpath, __copy_bins)
+        __compile(prjpath, app_args, recipe, buildid)
         __linking(prjpath, recipe)
         __copy_files(prjpath, recipe)
 
