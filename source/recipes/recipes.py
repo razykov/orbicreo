@@ -17,6 +17,7 @@ class RecipeJson(object):
         "export_file_prefix"  : [str],
         "compiler_name"       : [str],
         "compiler_std"        : [str],
+        "directory_dist"      : [str],
         "compiler_options"    : [list, str],
         "dependency_includes" : [list, str],
         "inherited_options"   : [list, str],
@@ -105,6 +106,7 @@ class Recipe(object):
                                                "" if self.project_type == "app" else "lib")
             self.compiler_name       = rj.read('compiler_name',       False, "gcc")
             self.compiler_std        = rj.read('compiler_std',        False, "gnu89")
+            self.directory_dist      = rj.read('directory_dist',      False, "./")
             self.compiler_options    = rj.read('compiler_options',    False, [])
             self.dependency_includes = rj.read('dependency_includes', False, [])
             self.inherited_options   = rj.read('inherited_options',   False, [])

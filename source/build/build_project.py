@@ -104,8 +104,8 @@ def __compile(prjpath, app_args, recipe, buildid):
 
 def __linking(prjpath, recipe):
     obj = prjpath + "/build/obj/" + recipe.os + "_" + recipe.arch
-    subbindir = "/bin/" + recipe.os + "_" + recipe.arch
-    bindir = os.path.abspath(prjpath + subbindir)
+    subbindir = "/bin/" + recipe.os + "_" + recipe.arch + "/"
+    bindir = os.path.abspath(prjpath + subbindir + recipe.directory_dist)
 
     if not os.path.exists(bindir):
         os.makedirs(bindir)

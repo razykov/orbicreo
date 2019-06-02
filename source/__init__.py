@@ -3,6 +3,7 @@
 import os
 import sys
 import argparse
+from time import sleep
 
 sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/build" ))
 sys.path.append( os.path.abspath(os.path.dirname(__file__) + "/recipes" ))
@@ -29,6 +30,8 @@ def __arguments_parse():
 def __is_orbi(path):
     code  = False
     recps = False
+    if not os.path.isdir(path):
+        return False
     for f in os.listdir(path):
         file_path = path + "/" + f
         if os.path.isdir(file_path):
@@ -41,9 +44,12 @@ def __is_orbi(path):
 def __try_build(prjpath, app_args):
     try:
         orbibuild(prjpath, app_args)
+        if not __is_orbi(os.getcwd()) and os.path.isdir(prjpath + "/bin/"):
+            if not os.path.isdir("bin"):
+                os.makedirs("bin")
+            copytree(prjpath + "/bin/", "./bin/")
     except ValueError as e:
         print (e.args[0])
-
 
 def main():
     if not len(sys.argv) > 1:
@@ -52,6 +58,9 @@ def main():
 
     prjpath = sys.argv[1]
     app_args = __arguments_parse()
+
+    if app_args.clean:
+        shutil.rmtree("bin", True)
 
     if __is_orbi(prjpath):
         __try_build(prjpath, app_args)
