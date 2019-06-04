@@ -1,7 +1,7 @@
 # Maintainer: Vyacheslav Razykov <v.razykov@gmail.com>
 
 pkgname=orbicreo
-pkgver=0.3.2
+pkgver=0.3.3
 pkgrel=1
 pkgdesc="A utility to apply patch files to original sources"
 arch=('i686' 'x86_64')
@@ -9,7 +9,7 @@ url="Builder script for C-projects based on libbixi"
 license=('GPL')
 depends=('git')
 source=("https://bitbucket.org/razykov/orbicreo/get/$pkgver.tar.gz")
-md5sums=('e414b670b25fdb68e4638a967b64f76a')
+md5sums=('481b646b2627e0fd02acc30a177e3aa8')
 
 package() {
     msg "Extracting tar archive ..."
@@ -19,9 +19,5 @@ package() {
     install -d "${pkgdir}/usr/bin/_orbicreo"
     cp -R "${srcdir}/orbicreo/source/"* "${pkgdir}/usr/bin/_orbicreo"
     mv "${pkgdir}/usr/bin/_orbicreo/orbicreo" "${pkgdir}/usr/bin/"
-#    install "${srcdir}/orbicreo/source/"* "${pkgdir}/usr/bin/_orbicreo"
-
-#        cd "$srcdir/$pkgname-$pkgver"
-#        make DESTDIR="$pkgdir/" install
 }
 
